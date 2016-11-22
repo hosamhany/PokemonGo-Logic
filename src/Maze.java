@@ -306,6 +306,7 @@ public class Maze {
 		int x1, x2, y1, y2;
 		String KB = "";
 		ArrayList<Integer> parameters;
+		ArrayList<Integer> checkParams;
 		for (Pair pr : this.walls) {
 			x1 = pr.first / this.columns;
 			y1 = pr.first % this.columns;
@@ -320,6 +321,41 @@ public class Maze {
 			parameters.add(x2);
 			parameters.add(y2);
 			KB = KB + createPredicate("wall", parameters) + ".\n";
+			parameters = new ArrayList<Integer>();
+			parameters.add(x2);
+			parameters.add(y2);
+			parameters.add(x1);
+			parameters.add(y1);
+			KB = KB + createPredicate("wall", parameters) + ".\n";
+		}
+		int[] dx = { 0, 1, 0, -1 };
+		int[] dy = { 1, 0, -1, 0 };
+		int xnew, ynew;
+
+		for (int x = 0; x < this.rows; x++) {
+			for (int y = 0; y < this.columns; y++) {
+				for (int i = 0; i < 4; i++) {
+					xnew = dx[i] + x;
+					ynew = dy[i] + y;
+					if ((xnew >= 0) && (xnew < this.rows) && (ynew >= 0) && (ynew < this.columns)) {
+						for (Pair pr : this.walls) {
+							x1 = pr.first / this.columns;
+							y1 = pr.first % this.columns;
+							x2 = pr.second / this.columns;
+							y2 = pr.second % this.columns;
+							if (!(((x == x1) && (y == y1) && (xnew == x2) && (ynew == y2))
+									|| ((x == x2) && (y == y2) && (xnew == x1) && (ynew == y1)))) {
+								parameters = new ArrayList<Integer>();
+								parameters.add(x);
+								parameters.add(y);
+								parameters.add(xnew);
+								parameters.add(ynew);
+								KB = KB + createPredicate("notwall", parameters) + ".\n";
+							}
+						}
+					}
+				}
+			}
 		}
 		// System.out.println("Rows:" + this.rows + "Columns:" + this.columns);
 		// boundx, boundary of rows
@@ -338,6 +374,8 @@ public class Maze {
 		parameters.add(this.initialCell % this.columns);
 		parameters.add(-1);
 		parameters.add(-2);
+		parameters.add(0);
+		parameters.add(-3);
 		KB = KB + createPredicate("at", parameters) + ".\n";
 		// System.out.println("Goal Cell \n X:" + this.goalCell / this.columns +
 		// "Y:" + this.goalCell % this.columns);
@@ -417,6 +455,8 @@ public class Maze {
 					param1 = "none";
 				else if (parameter == -2) {
 					param1 = "s0";
+				} else if (parameter == -3) {
+					param1 = "[]";
 				} else {
 					param1 = parameter + "";
 				}
